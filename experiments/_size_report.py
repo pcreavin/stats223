@@ -60,7 +60,8 @@ def plot_joint(tab, title, path, iota=10.0):
     first = np.atleast_1d(axes)[0]
     first.set_ylabel("Joint rejection rate (%)", color=INK)
     last = np.atleast_1d(axes)[-1]
-    last.text(len(tab[tab.level == levels[-1]]) - 0.5, iota + 0.12, "ι = 10%", color=MUTED, fontsize=8, ha="right")
+    last.text(0.98, iota + 0.12, "ι = 10%", color=MUTED, fontsize=8, ha="right",
+              transform=last.get_yaxis_transform())
     first.legend(frameon=False, fontsize=8, loc="lower left")
     fig.suptitle(title, color=INK, fontsize=11)
     fig.tight_layout()
