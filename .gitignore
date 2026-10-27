@@ -9,3 +9,8 @@ r/renv/staging/
 r/renv/local/
 r/.Rprofile.local
 .DS_Store
+.Rproj.user
+.Rhistory
+r/.Rhistory
+r/.Rproj.user/
+r/renv/library/
