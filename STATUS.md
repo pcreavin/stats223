@@ -21,14 +21,32 @@ Dimitriadis & Hoga (2026), VaR / CoVaR / reverse CoVaR monitoring. Branch `paul`
 | T4 | Figure 3 targets (first detectors by break point, K=5) | done | exp 08 | same CSV, `figures/targets_fig3.png` |
 | T5 | Figure 4 targets (estimation effect, E=1000) | done | exp 08 | same CSV, `figures/targets_fig4.png`. Uses all 6 EstWindow files (4849 reps). Null size 0.19–0.29 vs ι=0.1 |
 | T6 | Detection delays (not in the paper) | done | exp 08 | `data/targets/targets_delays.csv` (bootstrap SEs, B=500) |
-| **Our simulations vs the Figure 2–4 targets** |||||
-| C1 | Figure 2 points from our DGP (t* ∈ {0, 700, 800, 1000}; β_post grid) | pending | exp 04 (Milestone C) | — |
-| C2 | Figure 3 first-detector shares from our DGP | pending | not yet planned; can reuse the exp 04 simulations | — |
-| C3 | Figure 4 estimation effect from our DGP | pending | not in the plan: needs GARCH re-estimation with E=1000 | — |
+| **Milestone C: our simulations vs the Figure 2–4 targets** |||||
+| C1 | Figure 2 from our simulations (break point t* ∈ {0, 700, 800, 1000}; misspecification β_post grid) | pending | exp 04 | — |
+| C2 | Figure 3 from our simulations: same break simulations as Figure 2, recording which detector fires first | pending | exp 04 | — |
+| C3 | Figure 4 from our simulations (estimation effect, E=1000) | optional | needs GARCH re-estimation in every replication | — |
 | **Application (Figures 5–6)** |||||
 | D1 | Application targets from `appl_res` (first alarms, event offsets, claims) | pending | exp 09 (targets plan) | — |
 | D2 | Date check: are `appl_res` date labels shifted by NA rows? | pending | exp 10 (targets plan) | — |
 | D3 | Our application fit and monitoring, Figures 5–6 | pending | `r/fit_forecasts_application.R` + exp 05 (Milestone D) | — |
+
+## Persisted simulations (input for the e-detector comparison)
+Milestone B's null simulations are saved, and the e-detectors will run on exactly these paths.
+
+- **Location:** `data/derived/sims/` (git-ignored, local only, 21 MB). They can be regenerated deterministically with `python experiments/02_table1_size.py --M 5000` (seed 2026, about 8.5 min).
+- **Format:** each configuration has `{name}.npz` (compressed arrays) and `{name}.json` (every setting, the source simulation of K-subsets, the git commit and the creation time). Load with `src.sims_io.load_sim(name)` → `(arrays, meta)`, and list with `src.sims_io.list_sims(**filters)`.
+- **Configurations (8):** K ∈ {1, 2, 5, 10} × α=β ∈ {0.9, 0.95}, all at the null t* = n = 1000 (no break), break_in_X = FALSE, M = 5000, n = 1000, m = 250, E = 5001 (true parameters), ν = 5, seed 2026. Name pattern: `K{K}_a{lv}_b{lv}_t1000_bp0.85_bx0_M5000_n1000_m250_E5001_s2026`. K = 1, 2, 5 are the first K banks of the K = 10 simulation, which is exact in law.
+
+| array | shape | dtype | content |
+|---|---|---|---|
+| `I_VaR` | [M, n] | int8 | system VaR violations |
+| `I_CoVaR` | [M, K, n] | int8 | CoVaR violations per bank |
+| `I_VaR_Rev` | [M, K, n] | int8 | bank VaR violations (reverse mode) |
+| `I_CoVaR_Rev` | [M, K, n] | int8 | reverse CoVaR violations per bank |
+| `rl_covar` | [M, K+2] | float64 | run lengths of VaR, CoVaR_1..K and Joint (inf = no alarm) |
+| `rl_rev` | [M, 2K+1] | float64 | run lengths of VaR_1..K, CoVaR_1..K and Joint (K > 1 only) |
+
+The break and misspecification simulations for Figures 2–3 don't exist yet. Milestone C (exp 04) will save them in the same format via `sims_io.save_sim`.
 
 ## Merge verification (2026-10-27)
 | check | result |
