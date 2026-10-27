@@ -25,6 +25,7 @@ R scripts are run from the repo root (`Rscript r/<script>.R`). They activate `r/
 | `src/data.py` | loaders for their `.rds` data and stored results |
 | `src/detectors.py` | UC + Gini-of-durations detectors, null moments (ports `R/Detectors.R`, `R/mu.R`) |
 | `src/critical_values.py` | Algorithm 1 thresholds (port of `R/CriticalValues.R`) |
+| `src/their_moments.py` | thresholds from our sups standardised with their stored moments (01b, 01c) |
 | `src/monitoring.py` | generic `monitor(paths, thresholds)` + CoVaR / reverse wrappers (port of `R/SysRisk_Monitoring.R`) |
 | `r/xcheck_*.R` | exact cross-checks of the Python port against their unchanged R functions |
 | `experiments/0X_*.py` | replication scripts; each prints *ours vs theirs* with PASS/FAIL |
@@ -35,6 +36,9 @@ R scripts are run from the repo root (`Rscript r/<script>.R`). They activate `r/
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/python experiments/01_moments_and_thresholds.py --B 5000   # ~1 min
+.venv/bin/python experiments/01b_threshold_seeds.py                  # seed study of the c_VaR tilt, ~1 min (needs 01)
+.venv/bin/python experiments/01c_reduced_table.py                    # their reduced (n, m) table, ~12 min
+.venv/bin/python experiments/01d_bootstrap_se_check.py               # bootstrap SE vs across-seed sd, ~35 min (needs 01c)
 ```
 
 See `REPLICATION_NOTES.md` for every replicated number, deviations and known issues in the reference code.

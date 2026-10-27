@@ -19,3 +19,13 @@ def test_crit_values_recoded():
     assert set(cv.SysRisk) == {"CoVaR", "CoES", "MES", "CoVaR_Reverse"}
     row = data.crit_value_row(cv, "CoVaR", 0.95, 0.95, K=1)
     assert abs(row.c_VaR - 2.35) < 0.01 and abs(row.c_SysRisk - 4.82) < 0.01
+
+
+def test_crit_values_reduced():
+    cv = data.load_crit_values_reduced()
+    assert "CoVaR_Exposure" not in set(cv.SysRisk) and "CoVaR_Reverse" in set(cv.SysRisk)
+    for col in ("n", "m", "K", "B", "alpha", "beta", "iota"):
+        assert pd.api.types.is_numeric_dtype(cv[col])
+    assert len(cv[["n", "m"]].drop_duplicates()) == 24
+    row = data.crit_value_row(cv, "CoVaR_Reverse", 0.95, 0.95, K=5, n=500, m=50)
+    assert row.B == 2000

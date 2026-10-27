@@ -24,11 +24,25 @@ def load_assets() -> pd.DataFrame:
     return wide
 
 
+def _recode_reverse(cv: pd.DataFrame) -> pd.DataFrame:
+    cv["SysRisk"] = cv["SysRisk"].replace({"CoVaR_Exposure": "CoVaR_Reverse"})
+    return cv
+
+
 def load_crit_values() -> pd.DataFrame:
     """Their stored critical-value table (B=5000), with 'CoVaR_Exposure' recoded to
     'CoVaR_Reverse' exactly as in code_UDE/sim_szenarios.R."""
-    cv = _read_rds(paths.CRIT_VALUES_RDS)
-    cv["SysRisk"] = cv["SysRisk"].replace({"CoVaR_Exposure": "CoVaR_Reverse"})
+    return _recode_reverse(_read_rds(paths.CRIT_VALUES_RDS))
+
+
+def load_crit_values_reduced() -> pd.DataFrame:
+    """Their reduced table over (n, m) (B=2000). Its design columns are stored as string
+    categoricals, so they are cast to numbers here."""
+    cv = _recode_reverse(_read_rds(paths.CRIT_VALUES_REDUCED_RDS))
+    for col in ("n", "m", "K", "B"):
+        cv[col] = cv[col].astype(str).astype(int)
+    for col in ("alpha", "beta", "iota", "a"):
+        cv[col] = cv[col].astype(str).astype(float)
     return cv
 
 

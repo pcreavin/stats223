@@ -35,3 +35,26 @@ def test_critical_values_deterministic_small_B():
     df = CV.critical_values(100, 300, [1, 2], 0.9, 0.9, B=100, iota=0.1, seed=1, reps_moments=2000)
     assert list(df.SysRisk) == ["CoVaR", "CoVaR_Reverse"] * 2
     assert (df.c_SysRisk > 0).all()
+
+
+def test_simulate_sups_multi_matches_single():
+    ms1 = Moments(0.01, 0.008, 0.44, 0.08)
+    ms2 = Moments(0.012, 0.007, 0.40, 0.09)
+    one = CV.simulate_sups(300, 100, 0.9, 0.9, 120, ms1, ms2, rng=7, chunk=50)
+    multi = CV.simulate_sups_multi(300, 100, 0.9, 0.9, 120, [(ms1, ms2), (ms2, ms1)], rng=7, chunk=50)
+    np.testing.assert_array_equal(one[0], multi[0][0])
+    np.testing.assert_array_equal(one[1], multi[0][1])
+    other = CV.simulate_sups(300, 100, 0.9, 0.9, 120, ms2, ms1, rng=7, chunk=50)
+    np.testing.assert_array_equal(other[0], multi[1][0])
+    np.testing.assert_array_equal(other[1], multi[1][1])
+
+
+def test_select_and_bootstrap_multi_match_single():
+    rng = np.random.default_rng(3)
+    sv, sc = rng.normal(size=1500), rng.normal(size=1500)
+    multi = CV.select_thresholds_multi(sv, sc, [1, 2, 5], 0.1)
+    boot = CV.bootstrap_se_multi(sv, sc, [1, 5], 0.1, n_boot=5, seed=9)
+    for K in (1, 2, 5):
+        assert multi[K] == CV.select_thresholds(sv, sc, K, 0.1)
+    for K in (1, 5):
+        assert boot[K] == CV.bootstrap_se(sv, sc, K, 0.1, n_boot=5, seed=9)

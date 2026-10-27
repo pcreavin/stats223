@@ -9,6 +9,7 @@ FIGURES = ROOT / "figures"
 R_DIR = ROOT / "r"
 
 CRIT_VALUES_RDS = EXT / "simulations" / "data" / "df_CritVal_full_20250805.rds"
+CRIT_VALUES_REDUCED_RDS = EXT / "simulations" / "data" / "df_CritVal_reduced_20250805_mn.rds"
 ASSETS_RDS = EXT / "applications" / "data" / "data_Assets.rds"
 APPL_RES_RDS = EXT / "applications" / "data" / "appl_res_20251024.rds"
 SIM_BREAKPOINT_RDS = EXT / "simulations" / "data" / "sim_BreakPoint_20251006.rds"
