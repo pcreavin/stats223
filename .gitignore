@@ -14,3 +14,5 @@ r/.Rprofile.local
 r/.Rhistory
 r/.Rproj.user/
 r/renv/library/
+.RData
+*.RData
