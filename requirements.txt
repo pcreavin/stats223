@@ -6,3 +6,4 @@ arch
 pyreadr
 pytest
 numba  # rolling Gini over ~1e6 detector paths; plain-NumPy reference kept for tests
+pyarrow  # parquet cache of their stored results
