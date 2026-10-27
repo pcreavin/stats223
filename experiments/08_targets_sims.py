@@ -374,7 +374,7 @@ def main():
     print(table2_reverse_corrected(res).to_string(index=False))
 
     tg = figure_targets(res)
-    tg.to_csv(paths.DERIVED / "targets_fig2_fig3_fig4.csv", index=False)
+    tg.to_csv(paths.TARGETS / "targets_fig2_fig3_fig4.csv", index=False)
     print(f"\nwrote targets_fig2_fig3_fig4.csv ({len(tg)} rows)")
 
     show = tg[tg.figure == "table1"].pivot_table(index="Measure", columns=["K", "alpha"], values="Rate")
@@ -392,7 +392,7 @@ def main():
     print(f"\nmax MC SE over all rates: {tg.SE.max():.4f}")
 
     dl = delay_table(settings, args.n_boot, args.seed)
-    dl.to_csv(paths.DERIVED / "targets_delays.csv", index=False)
+    dl.to_csv(paths.TARGETS / "targets_delays.csv", index=False)
     print(f"\nwrote targets_delays.csv ({len(dl)} rows, bootstrap B={args.n_boot})")
     j = dl[(dl.sim_setting == "BreakPoint") & (dl.Asset == "Joint") & dl.break_in_X
            & (dl.alpha == 0.9) & dl.break_ge_m]

@@ -17,10 +17,10 @@ Dimitriadis & Hoga (2026), VaR / CoVaR / reverse CoVaR monitoring. Branch `paul`
 | **Targets from their stored results** |||||
 | T1 | Our aggregation vs their processed files | done | exp 08 | rates and rep counts identical, ARL max diff 4.8e-13 |
 | T2 | Their size tables (`simulations/output/size_*.txt`) | done | exp 08 (also exp 02/03 for Table 1/2) | 310/310 cells match at 2 dp |
-| T3 | Figure 2 targets (power by break point; by misspecification) | done | exp 08 | `data/derived/targets_fig2_fig3_fig4.csv`, `figures/targets_fig2.png` |
+| T3 | Figure 2 targets (power by break point; by misspecification) | done | exp 08 | `data/targets/targets_fig2_fig3_fig4.csv`, `figures/targets_fig2.png` |
 | T4 | Figure 3 targets (first detectors by break point, K=5) | done | exp 08 | same CSV, `figures/targets_fig3.png` |
 | T5 | Figure 4 targets (estimation effect, E=1000) | done | exp 08 | same CSV, `figures/targets_fig4.png`. Uses all 6 EstWindow files (4849 reps). Null size 0.19–0.29 vs ι=0.1 |
-| T6 | Detection delays (not in the paper) | done | exp 08 | `data/derived/targets_delays.csv` (bootstrap SEs, B=500) |
+| T6 | Detection delays (not in the paper) | done | exp 08 | `data/targets/targets_delays.csv` (bootstrap SEs, B=500) |
 | **Our simulations vs the Figure 2–4 targets** |||||
 | C1 | Figure 2 points from our DGP (t* ∈ {0, 700, 800, 1000}; β_post grid) | pending | exp 04 (Milestone C) | — |
 | C2 | Figure 3 first-detector shares from our DGP | pending | not yet planned; can reuse the exp 04 simulations | — |

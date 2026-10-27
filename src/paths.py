@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parent.parent
 EXT = ROOT / "external" / "dh_replication"
 DERIVED = ROOT / "data" / "derived"
 SIMS = DERIVED / "sims"
+TARGETS = ROOT / "data" / "targets"       # tracked: replication targets from their stored results
 FIGURES = ROOT / "figures"
 R_DIR = ROOT / "r"
 
@@ -17,5 +18,5 @@ SIM_PARAMMISSPEC_RDS = EXT / "simulations" / "data" / "sim_ParamMisspec_20251006
 
 
 def ensure_dirs() -> None:
-    for d in (DERIVED, SIMS, FIGURES):
+    for d in (DERIVED, SIMS, TARGETS, FIGURES):
         d.mkdir(parents=True, exist_ok=True)

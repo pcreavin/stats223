@@ -171,7 +171,7 @@ First-detector shares: 68/68 within 3 SD, largest gap 0.44pp. Our reverse Joint 
 
 ## Targets (part 1): simulation targets from their stored results, experiment 08
 
-Code: `src/their_results.py` (loaders, parquet cache in `data/derived/their_results/`, their aggregation), `experiments/08_targets_sims.py`. Log: `data/derived/exp08_log.txt`.
+Code: `src/their_results.py` (loaders, parquet cache in `data/derived/their_results/`, their aggregation), `experiments/08_targets_sims.py`. Log: `data/derived/exp08_log.txt` (not tracked; written with `| tee`). Targets are tracked in `data/targets/`.
 Aggregation copies `simulations/eval_sim_process_files.R`:
 - A run length (RL) is the first window 1..751 with a normalised detector > 1, and Inf if none. So the alarm day is m − 1 + RL.
 - Rows where a measure does not apply are NA, and every mean uses na.rm.
@@ -186,8 +186,8 @@ Aggregation copies `simulations/eval_sim_process_files.R`:
 | Size tables `size_accum_rate.txt` (Table 1), `size_accumrate_individual.txt`, `size_individual.txt`, `size_first_individual.txt` (Table 2), `size_first_individual_{CoVaR,RevCoVaR}.txt`: 310 cells at 2 dp | PASS: all match |
 
 Outputs:
-- `data/derived/targets_fig2_fig3_fig4.csv`: Table 1, Figs 2–4 rates with binomial MC SEs (max SE 0.0072).
-- `data/derived/targets_delays.csv`: false-alarm, post-break and censored shares; delay median, mean and IQR, with bootstrap SEs (B = 500). The delay is alarm_day − t*, counting only alarms after t*.
+- `data/targets/targets_fig2_fig3_fig4.csv`: Table 1, Figs 2–4 rates with binomial MC SEs (max SE 0.0072).
+- `data/targets/targets_delays.csv`: false-alarm, post-break and censored shares; delay median, mean and IQR, with bootstrap SEs (B = 500). The delay is alarm_day − t*, counting only alarms after t*.
 - Re-plots in `figures/targets_fig{2,3,4}.png`.
 
 ### Discrepancies found
