@@ -26,8 +26,8 @@ Dimitriadis & Hoga (2026), VaR / CoVaR / reverse CoVaR monitoring. Branch `paul`
 | C2 | Figure 3 from our simulations: same break simulations as Figure 2, recording which detector fires first | pending | exp 04 | — |
 | C3 | Figure 4 from our simulations (estimation effect, E=1000) | optional | needs GARCH re-estimation in every replication | — |
 | **Application (Figures 5–6)** |||||
-| D1 | Application targets from `appl_res` (first alarms, event offsets, claims) | pending | exp 09 (targets plan) | — |
-| D2 | Date check: are `appl_res` date labels shifted by NA rows? | pending | exp 10 (targets plan) | — |
+| D1 | Application targets from `appl_res` (first alarms, event offsets, claims) | done | exp 09 | claims a–d 6/6 PASS at α=β=0.95 (WFC first only as a tie with BAC); `data/targets/targets_application_alarms.csv`, `figures/targets_fig{5,6}.png` |
+| D2 | Date check: are `appl_res` date labels shifted by NA rows? | done | exp 10 | E = 1500 in all windows. COVID labels 1–326 (to 2019-07-05) are 4 trading days late (SPF NA 2019-07-01..05); the other windows are correct. No crash-period alarm affected |
 | D3 | Our application fit and monitoring, Figures 5–6 | pending | `r/fit_forecasts_application.R` + exp 05 (Milestone D) | — |
 
 ## Persisted simulations (input for the e-detector comparison)

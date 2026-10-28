@@ -195,3 +195,58 @@ Outputs:
 2. **No α = β = 0.75 level is stored.** All simulation files contain only 0.9 and 0.95, and so do Tables 1–2.
 3. **Label typo in `eval_sim_AnyDetection.R`.** It filters on `"Reversed CoVaR"`, but the level is `"Reverse CoVaR"`, so the reverse row of `size_accumrate_individual.txt` is blank apart from Joint (reproduced in our check). The same typo drops reverse CoVaR from `power_by_*_CoVaRonly.pdf`. The correct reverse row (any detection, K = 5, α = 0.9, %) is Joint 6.96; VaR_1..5 0.74, 0.98, 0.68, 0.98, 1.10; CoVaR_1..5 0.90, 0.90, 0.68, 0.84, 0.76.
 4. **Estimation noise inflates the size in Figure 4.** At Break_point = 1000 (no break), α = 0.9, the Joint rejection rate with E = 1000 is 0.19–0.29 across K and both measures, against ι = 0.1. With the true parameters (E = 5001) it is 0.07–0.09.
+
+## Targets (part 2): application from their stored results, experiments 09–10
+
+Code: `experiments/09_targets_application.py`, `experiments/10_data_alignment.py`, `src/their_results.appl_window_dates`. Logs: `data/derived/exp{09,10}_log.txt` (not tracked). Target: `data/targets/targets_application_alarms.csv`. It covers α = β = 0.95, the CoVaR and reverse CoVaR measures and all 4 GARCH specs × 4 windows, with one row per detector plus a Joint row.
+- The first alarm is the first window (1..751) with a normalised value > 1. Joint = min over detectors, and every detector that attains the minimum is listed in `joint_first_by` (their tie rule).
+- `first_alarm_label` is their stored date. `first_alarm_date` is the date actually monitored (exp 10), and all offsets use it. Trading-day offsets are positions in the 751 monitored dates relative to the first date ≥ event. Event dates are 2008-09-15, 2020-03-13, 2023-03-10 (SVB) and 2025-04-02, each counted only if it falls inside the window.
+- Joint RL = min of the detector RLs: PASS. 288 rows (4 × 4 × (6 + 10 + 2)): PASS. Figures `figures/targets_fig{5,6}.png` (untracked) are plain re-plots of CCC_norm and DCC_std × 4 windows. Figure 5 matches `applications/output/Detectors_GARCH_CoVaR.pdf` visually.
+
+Assumptions: Figure 5 = CoVaR monitoring and Figure 6 = reverse CoVaR (their `Detectors_GARCH_{CoVaR,RevCoVaR}.pdf`). The claims are checked on CoVaR monitoring only. "Mainly via CoVaR detectors" means the Joint first alarm is caused by a CoVaR detector *and* more bank CoVaR detectors than the VaR detector alarm in the window.
+
+### Claims (CoVaR monitoring, α = β = 0.95)
+| claim | verdict | evidence |
+|---|---|---|
+| (a) CCC_norm, FinCrisis: alarms mainly via CoVaR | PASS | first by CoVaR_BAC and CoVaR_WFC (tie) on 2007-11-07; 3/5 CoVaR alarm, VaR does not |
+| (a) CCC_norm, COVID: alarms mainly via CoVaR | PASS | first by CoVaR_GS on 2018-12-21 (303 td *before* 2020-03-13); 3/5 CoVaR alarm, VaR alarms 2020-07-28 |
+| (b) CCC_norm, FinCrisis: WFC first | PASS (tied) | WFC is tied with BAC in window 286. "WFC first" holds only under the tie rule |
+| (c) DCC_std: only the sector VaR detector alarms, around COVID | PASS | the only alarm in all 4 windows is VaR_SPF in COVID, 2020-03-18 (+3 td, +5 cd); 28 days above 1, peak 1.08 |
+| (d) CCC_norm, CalmTime: no alarms | PASS | 0 detectors > 1 |
+| (d) DCC_std, CalmTime: no alarms | PASS | 0 detectors > 1 (no alarms under any of the 4 specs either) |
+
+### First alarms, CoVaR monitoring (monitored dates; td = trading days to the window's event)
+| spec | window | Joint first alarm | caused by | td to event | other alarming detectors (first alarm) |
+|---|---|---|---|---|---|
+| CCC_norm | FinCrisis | 2007-11-07 | CoVaR_BAC, CoVaR_WFC | −214 | CoVaR_C 2008-12-02 (+55) |
+| CCC_norm | CalmTime | none | | | |
+| CCC_norm | COVID | 2018-12-21 | CoVaR_GS | −303 | CoVaR_C 2020-02-24 (−14), CoVaR_BAC 2020-05-06 (+37), VaR_SPF 2020-07-28 (+94) |
+| CCC_norm | TrumpTariff | 2025-07-15 | CoVaR_WFC | +70 (+587 vs SVB) | |
+| DCC_std | FinCrisis | none | | | |
+| DCC_std | CalmTime | none | | | |
+| DCC_std | COVID | 2020-03-18 | VaR_SPF | +3 | |
+| DCC_std | TrumpTariff | none | | | |
+
+Side observations:
+- VaR_SPF is identical under DCC and CCC with the same innovation distribution, because the VaR depends only on the univariate GARCH fits.
+- DCC_norm gives the same first alarms as CCC_norm.
+- In reverse CoVaR monitoring, the RCoVaR detectors of all four specs alarm in COVID at window 219 (2019-01-25), In FinCrisis all specs alarm: the Gaussian specs via RCoVaR (2007-11-01/07), the Student-t specs only via VaR_BAC and VaR_C (2008-07-14, −44 td). In TrumpTariff only the Gaussian specs alarm (RCoVaR, 2025-04-04, +2 td). The full table is in the log and the CSV.
+
+### Date alignment (experiment 10)
+`appl_res` stores `tail(data_Assets_wide, n)` dates (checked: identical in all 4 windows). The detectors run on the last n rows of the `na.omit`'d matrix. The `pivot_wider` row order equals date order (every asset is sorted and BAC covers all dates), so the pandas reconstruction is exact and no R cross-check was needed.
+
+| window | start | raw rows | nE | E | NA in the last n | labels |
+|---|---|---|---|---|---|---|
+| FinCrisis | 1999-10-06 | 2500 | 2500 | 1500 | 0 | correct |
+| CalmTime | 2007-01-29 | 2500 | 2500 | 1500 | 0 | correct |
+| COVID | 2011-03-31 | 2504 | 2500 | 1500 | SPF: 2019-07-01, -02, -03, -05 | **shifted** |
+| TrumpTariff | 2015-11-06 | 2504 | 2500 | 1500 | 0 (the same 4 SPF NAs are in the estimation sample) | correct |
+
+The 1999-05-05 floor never binds. **COVID:** windows 1–326 (labels 2018-03-20..2019-07-05) carry a label 4 trading days later than the day actually monitored (6–7 calendar days; e.g. label 2018-03-20 = monitored 2018-03-14). From label 2019-07-08 on, the labels are correct. The affected first alarms are all the early ones:
+- CoVaR_GS / Joint under CCC_norm and DCC_norm: label 2018-12-28, true date 2018-12-21.
+- All RCoVaR first alarms and their Joint (all specs): label 2019-01-31, true date 2019-01-25.
+
+All alarms around the COVID crash are correctly labelled, including DCC_std's VaR_SPF alarm on 2020-03-18 and CoVaR_C on 2020-02-24. So none of the claims change. In Figures 5–6, the COVID curves before July 2019 are drawn 4 trading days too late.
+
+### Known issues in their code (application)
+- The date labels come from the frame that has not been `na.omit`'d (see above). As a result, COVID window labels 1–326 are 4 trading days late.
