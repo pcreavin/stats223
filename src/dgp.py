@@ -55,13 +55,15 @@ def _normalise(Q: np.ndarray) -> np.ndarray:
     return Q * s[..., :, None] * s[..., None, :]
 
 
-def simulate_and_filter(M: int, p: DGPParams, rng: np.random.Generator, draw_dim: int | None = None):
+def simulate_and_filter(M: int, p: DGPParams, rng: np.random.Generator, draw_dim: int | None = None,
+                        return_true: bool = False):
     """Simulate M paths and filter them with the pre-break parameters.
 
     Returns Y [M, n, K+1] (out-of-sample losses), sig [M, n, K+1] (filtered conditional sd) and
     rho [M, n, K] (filtered correlation of X with bank k). `draw_dim` >= K+1 draws that many normal columns
     per day and uses the first K+1; since Z = L e with L lower-triangular, the first K+1 series then coincide
-    exactly with the first K+1 series of a larger simulation that used the same draws."""
+    exactly with the first K+1 series of a larger simulation that used the same draws. return_true=True also
+    returns the TRUE conditional sd [M, n, K+1] and correlation of X with bank k [M, n, K] of the DGP."""
     d = p.K + 1
     dd = d if draw_dim is None else draw_dim
     if dd < d:
@@ -82,6 +84,8 @@ def simulate_and_filter(M: int, p: DGPParams, rng: np.random.Generator, draw_dim
     fA, fB = p.dcc_pre
 
     Y = np.empty((M, p.n, d)); SIG = np.empty((M, p.n, d)); RHO = np.empty((M, p.n, d - 1))
+    if return_true:
+        SIG_true = np.empty((M, p.n, d)); RHO_true = np.empty((M, p.n, d - 1))
 
     # i = 1: start values (draw order as in R: Y, eps, sigma.sq)
     y = norm(M); eps = norm(M); s2 = norm(M) ** 2
@@ -92,7 +96,8 @@ def simulate_and_filter(M: int, p: DGPParams, rng: np.random.Generator, draw_dim
         a, b = p.dcc_pre if i <= i_break else p.dcc_post
         s2 = g[0] + g[1] * y ** 2 + g[2] * s2
         Q = (1 - a - b) * Qbar + a * (eps[:, :, None] * eps[:, None, :]) + b * Q
-        L = np.linalg.cholesky(_normalise(Q))
+        R = _normalise(Q)
+        L = np.linalg.cholesky(R)
         z = scale * np.einsum("mij,mj->mi", L, norm(M))
         eps = z * np.sqrt(nu / rng.chisquare(nu, M))[:, None]
         y = np.sqrt(s2) * eps
@@ -113,6 +118,11 @@ def simulate_and_filter(M: int, p: DGPParams, rng: np.random.Generator, draw_dim
             Y[:, j] = y
             SIG[:, j] = np.sqrt(fs2)
             RHO[:, j] = _normalise(fQ)[:, 0, 1:]
+            if return_true:
+                SIG_true[:, j] = np.sqrt(s2)
+                RHO_true[:, j] = R[:, 0, 1:]
+    if return_true:
+        return Y, SIG, RHO, SIG_true, RHO_true
     return Y, SIG, RHO
 
 
