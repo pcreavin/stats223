@@ -28,7 +28,8 @@ Dimitriadis & Hoga (2026), VaR / CoVaR / reverse CoVaR monitoring. Branch `paul`
 | **Application (Figures 5–6)** |||||
 | D1 | Application targets from `appl_res` (first alarms, event offsets, claims) | pending | exp 09 (targets plan) | — |
 | D2 | Date check: are `appl_res` date labels shifted by NA rows? | pending | exp 10 (targets plan) | — |
-| D3 | Our application fit and monitoring, Figures 5–6 | pending | `r/fit_forecasts_application.R` + exp 05 (Milestone D) | — |
+| D3 | Our application fit and monitoring, Figures 5–6 (CCC_norm, DCC_std × 4 windows, α=β=0.95) | done | `r/fit_forecasts_application.R` + exp 05 | vs their unchanged `SysRisk_Monitoring` 16/16 PASS (max diff 6.7e-16); vs stored `appl_res` max diff 6.7e-16, first alarms identical 16/16; recomputed indicators 100% agreement; qualitative checks E1, E2(i), E3, E4 PASS. E2(ii) "WFC first in 2008" FAILs for ours and theirs alike: BAC/WFC tie on 2007-11-07 (a finding about the claim) |
+| D3b | CCC_std and DCC_norm application fits | not replicated (scope) | — | — |
 
 ## Persisted simulations (input for the e-detector comparison)
 Milestone B's null simulations are saved, and the e-detectors will run on exactly these paths.

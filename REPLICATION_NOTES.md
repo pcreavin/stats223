@@ -195,3 +195,72 @@ Outputs:
 2. **No α = β = 0.75 level is stored.** All simulation files contain only 0.9 and 0.95, and so do Tables 1–2.
 3. **Label typo in `eval_sim_AnyDetection.R`.** It filters on `"Reversed CoVaR"`, but the level is `"Reverse CoVaR"`, so the reverse row of `size_accumrate_individual.txt` is blank apart from Joint (reproduced in our check). The same typo drops reverse CoVaR from `power_by_*_CoVaRonly.pdf`. The correct reverse row (any detection, K = 5, α = 0.9, %) is Joint 6.96; VaR_1..5 0.74, 0.98, 0.68, 0.98, 1.10; CoVaR_1..5 0.90, 0.90, 0.68, 0.84, 0.76.
 4. **Estimation noise inflates the size in Figure 4.** At Break_point = 1000 (no break), α = 0.9, the Joint rejection rate with E = 1000 is 0.19–0.29 across K and both measures, against ι = 0.1. With the true parameters (E = 5001) it is 0.07–0.09.
+
+## Milestone D: real-data application (Figures 5–6)
+
+Code: `r/fit_forecasts_application.R` (an adapted copy of `applications/apply_SysRisk_Monitoring.R`) and `experiments/05_application_fig5_fig6.py`. Outputs go to `data/derived/appl/` (git-ignored) and `data/derived/exp05_*.csv`. The log is `data/derived/exp05_log.txt`, and the figures are `figures/fig5_covar.png` and `figures/fig6_revcovar.png`. Scope is CCC_norm and DCC_std × 4 windows at α = β = 0.95. CCC_std and DCC_norm are not replicated (scope), although the R script runs them if they are passed as arguments.
+
+### Changes to their script
+These are also listed in the script header. Windows, fit specs, solver settings and the ν extraction are verbatim.
+1. Paths are relative to the git root via `r/utils_io.R`.
+2. The missing `simulations/DGP.R` source is dropped.
+3. tidyverse/copula/patchwork (not in renv) are replaced by dplyr/tidyr/tibble/lubridate.
+4. Only α = β = 0.95 is run.
+5. `set.seed(1)` is called before each `ViolSeq_tDist`.
+6. The loop over windows uses `mclapply`.
+7. Plotting and the reshaping are removed.
+8. An output block is added: losses, D_t, upper-triangle R_t, all indicators, ν, and their unchanged `SysRisk_Monitoring` paths and run lengths.
+
+Every window has 2500 rows after na.omit, so E = 1500, n = 1000 and m = 250. The out-of-sample periods are FinCrisis 2005-09-23..2009-09-14, CalmTime 2013-01-11..2016-12-29, COVID 2017-03-17..2021-03-12 and TrumpTariff 2021-10-28..2025-10-22.
+
+**Run time:** 35 s for CCC_norm and 29 s for DCC_std (4 windows in parallel each). The fits take 2–4 s and `ViolSeq_tDist` about 20–30 s per window. All fits converged (flag 0).
+
+Fitted ν (their order: SPF, BAC, C, GS, JPM, WFC, then the Joint mshape for DCC; CCC_norm uses 10000 × 6):
+
+| DCC_std | SPF | BAC | C | GS | JPM | WFC | Joint |
+|---|---|---|---|---|---|---|---|
+| FinCrisis | 10 | 7 | 9 | 11 | 9 | 11 | 8 |
+| CalmTime | 6 | 6 | 5 | 5 | 6 | 5 | 5 |
+| COVID | 7 | 6 | 5 | 7 | 5 | 6 | 5 |
+| TrumpTariff | 6 | 5 | 5 | 5 | 5 | 5 | 5 |
+
+The ν quirk is reproduced. I_VaR and the reverse CoVaR use their `nu[1]`, the SPF univariate shape. Bank k's CoVaR and reverse VaR use `nu[k+1]`. The joint mshape is never used.
+
+### Results
+| check | result |
+|---|---|
+| (a) our monitoring on R's indicators (their stored K=5 thresholds; moments from the CoVaR row in both modes, as in `SysRisk_Monitoring`) vs their unchanged `SysRisk_Monitoring` | 16/16 PASS (2 specs × 4 windows × 2 modes); max abs diff 6.7e-16; run lengths identical |
+| (b) our normalised paths vs stored `appl_res_20251024.rds` (aligned by window index) | max abs diff 6.7e-16 in all 16 cells; first-alarm index identical for every detector |
+| (c) indicators recomputed in Python from R's losses, D_t, ρ_{X,k} and ν with our c(ρ, ν) tables | 100% agreement, 0 disagreeing days, for all 16 indicator sequences × 8 cells |
+
+The match with `appl_res` is exact, not only within MC noise. With integer ν, 2-D `pmvt` is deterministic (`CoVaR.true.t` is identical under seeds 1 and 2), so the unseeded pmvt calls in their script didn't matter. Our rmgarch/rugarch versions also reproduce their fits.
+
+First alarms (CoVaR mode; date = correct date, label = their date label):
+
+| spec | window | first alarms |
+|---|---|---|
+| CCC_norm | FinCrisis | CoVaR_BAC and CoVaR_WFC tie on 2007-11-07; CoVaR_C 2008-12-02 |
+| CCC_norm | COVID | CoVaR_GS 2018-12-21 (label 2018-12-28); CoVaR_C 2020-02-24; CoVaR_BAC 2020-05-06; VaR 2020-07-28 |
+| CCC_norm | TrumpTariff | CoVaR_WFC 2025-07-15 |
+| DCC_std | COVID | VaR 2020-03-18 (3 trading days after 2020-03-13) |
+| both | CalmTime, and DCC_std FinCrisis/TrumpTariff | none |
+
+Reverse mode: in COVID, both specs fire all five reverse CoVaRs on 2019-01-25 (label 2019-01-31). The full table is `data/derived/exp05_first_alarms.csv`.
+
+### Qualitative checks (e)
+| check | ours | theirs |
+|---|---|---|
+| E1 CCC_norm, crisis windows: the first alarm is a CoVaR detector | PASS | PASS |
+| E2(i) CCC_norm FinCrisis: WFC is among the first CoVaR alarms | PASS | PASS |
+| E2(ii) CCC_norm FinCrisis: WFC's alarm falls in 2008 | FAIL | FAIL |
+| E3 DCC_std: the only alarm is VaR_SPF, in COVID, within 20 days of 2020-03-13 | PASS | PASS |
+| E4 CalmTime: no alarms (both specs, both modes) | PASS | PASS |
+
+E2(ii) is a finding about the claim, not a replication failure. WFC is first, but tied with BAC, and both fire on 2007-11-07, before 2008. That holds both in their stored results and in ours.
+
+### Date labels
+In COVID, 326 of the 751 window dates in `appl_res` are shifted relative to the data rows (by up to 4 trading days at the start of the window). Their labels come from `tail(data_Assets_wide, n)`, which is taken before na.omit, and the COVID window contains 4 NA rows. The other windows are unaffected. Our CSVs carry both `date` (correct) and `date_theirs`. The figures use the correct dates. The diagnosis belongs to D2 / exp 10.
+
+### Deviations and notes (milestone D)
+- Figures 5–6 are re-plots from our Python paths with `src/ggstyle`. They match their `Detectors_GARCH_CoVaR.pdf` / `..._RevCoVaR.pdf` visually, except that the COVID x-axis uses the correct dates.
+- Building the c(ρ, ν) table at ν = 10000 emits a harmless overflow warning in the Newton step. Those points fall back to bisection.
