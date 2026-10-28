@@ -2,7 +2,7 @@
 
 STATS 223 project. We replicate Dimitriadis & Hoga (2026), *Systemic Risk Surveillance* (arXiv:2601.08598), in Python, covering their VaR, CoVaR and reverse CoVaR monitoring. We then extend it with e-detectors. The authors' R code (CC0) is included as a read-only submodule in `external/dh_replication`.
 
-**Status:** the replication is complete. See [REPLICATION.md](REPLICATION.md). The e-detector extension is next.
+**Status:** the replication is complete. See [REPLICATION.md](REPLICATION.md). The e-detector extension is in progress: see [EXTENSION.md](EXTENSION.md) (time-varying oracle, K = 1).
 
 ## Setup
 
