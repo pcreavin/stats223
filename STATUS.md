@@ -28,7 +28,8 @@ Dimitriadis & Hoga (2026), VaR / CoVaR / reverse CoVaR monitoring. Branch `paul`
 | **Application (Figures 5–6)** |||||
 | D1 | Application targets from `appl_res` (first alarms, event offsets, claims) | done | exp 09 | claims a–d 6/6 PASS at α=β=0.95 (WFC first only as a tie with BAC); `data/targets/targets_application_alarms.csv`, `figures/targets_fig{5,6}.png` |
 | D2 | Date check: are `appl_res` date labels shifted by NA rows? | done | exp 10 | E = 1500 in all windows. COVID labels 1–326 (to 2019-07-05) are 4 trading days late (SPF NA 2019-07-01..05); the other windows are correct. No crash-period alarm affected |
-| D3 | Our application fit and monitoring, Figures 5–6 | pending | `r/fit_forecasts_application.R` + exp 05 (Milestone D) | — |
+| D3 | Our application fit and monitoring, Figures 5–6 (CCC_norm, DCC_std × 4 windows, α=β=0.95) | done | `r/fit_forecasts_application.R` + exp 05 | vs their unchanged `SysRisk_Monitoring` 16/16 PASS (max diff 6.7e-16); vs stored `appl_res` max diff 6.7e-16, first alarms identical 16/16 (so the D1 targets are reproduced exactly); recomputed indicators 100% agreement; qualitative checks E1, E2(i), E3, E4 PASS. E2(ii) "WFC first in 2008" FAILs for ours and theirs alike: BAC/WFC tie on 2007-11-07 (a finding about the claim) |
+| D3b | CCC_std and DCC_norm application fits | not replicated (scope) | — | — |
 
 ## Persisted simulations (input for the e-detector comparison)
 Milestone B's null simulations are saved, and the e-detectors will run on exactly these paths.
