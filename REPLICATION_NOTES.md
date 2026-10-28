@@ -259,7 +259,7 @@ Reverse mode: in COVID, both specs fire all five reverse CoVaRs on 2019-01-25 (l
 E2(ii) is a finding about the claim, not a replication failure. WFC is first, but tied with BAC, and both fire on 2007-11-07, before 2008. That holds both in their stored results and in ours.
 
 ### Date labels
-In COVID, 326 of the 751 window dates in `appl_res` are shifted relative to the data rows (by up to 4 trading days at the start of the window). Their labels come from `tail(data_Assets_wide, n)`, which is taken before na.omit, and the COVID window contains 4 NA rows. The other windows are unaffected. Our CSVs carry both `date` (correct) and `date_theirs`. The figures use the correct dates. The diagnosis belongs to D2 / exp 10.
+In COVID, 326 of the 751 window dates in `appl_res` are shifted relative to the data rows: every date up to 2019-06-24 is labelled 4 trading days late (575 of the 1000 out-of-sample days). Their labels come from `tail(data_Assets_wide, n)`, which is taken before na.omit, and the COVID window contains 4 NA rows. The other windows are unaffected. Our CSVs carry both `date` (correct) and `date_theirs`. The figures use the correct dates. The diagnosis belongs to D2 / exp 10.
 
 ### Deviations and notes (milestone D)
 - Figures 5–6 are re-plots from our Python paths with `src/ggstyle`. They match their `Detectors_GARCH_CoVaR.pdf` / `..._RevCoVaR.pdf` visually, except that the COVID x-axis uses the correct dates.
