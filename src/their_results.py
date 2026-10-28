@@ -101,6 +101,31 @@ def load_appl_res() -> pd.DataFrame:
     return df
 
 
+APPL_ASSETS = ["SPF", "BAC", "C", "GS", "JPM", "WFC"]
+APPL_SETTINGS = {"FinCrisis": "2009-09-15", "CalmTime": "2016-12-30", "COVID": "2021-03-15",
+                 "TrumpTariff": "2025-10-23"}  # end dates (strict Date < end)
+
+
+def appl_window_dates(n: int = 1000, m: int = 250) -> dict:
+    """Per setting, as in apply_SysRisk_Monitoring.R: the window and the date sequences of the
+    n-m+1 detector values. 'labelled' = tail(data_Assets_wide, n) (not na.omit'd), which is what
+    appl_res stores; 'used' = the last n rows of the na.omit'd matrix actually monitored.
+    pivot_wider row order equals date order for these assets (checked in exp 10)."""
+    wide = data.load_assets()[APPL_ASSETS]
+    full = wide.dropna()
+    out = {}
+    for name, end in APPL_SETTINGS.items():
+        end = pd.Timestamp(end)
+        i_end = full.index.get_loc(end)
+        start = max(pd.Timestamp("1999-05-05"), full.index[i_end - 2500])
+        w = wide[(wide.index >= start) & (wide.index < end)]
+        mat = w.dropna()
+        out[name] = dict(start=start, end=end, window=w, nE=len(mat), E=len(mat) - n,
+                         labelled=w.index[-n:][-(n - m + 1):],
+                         used=mat.index[-n:][-(n - m + 1):])
+    return out
+
+
 def rates(df: pd.DataFrame, measure: str) -> pd.DataFrame:
     """Per-detector rejection rate and ARL (mean finite run length), as eval_sim_process_files.R."""
     rl = df[RL_COLS[measure]]
