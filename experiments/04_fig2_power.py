@@ -5,7 +5,7 @@ break_in_X = TRUE. Fig 2 left: beta_post = 0.85, t* in {0, 400, 700, 800, 900, 1
 beta_post in {0.70, 0.75, 0.80, 0.85}. Fig 3: K = 5, alpha = 0.9 first-detector shares. Delays: Joint,
 t* in {400, 700}. PASS iff |ours - theirs| <= 3 sqrt(SE_ours^2 + SE_theirs^2).
 
-Usage: python experiments/04_fig2_power.py [--M 2000] [--seed 2026] [--jobs 3] [--only T,BP] [--force]
+Usage: python experiments/04_fig2_power.py [--M 2000] [--seed 2026] [--jobs 3] [--only T,BP] [--force] [--plot-only]
 """
 import argparse
 import time
@@ -132,8 +132,11 @@ def pass_table(df, idx, col):
 
 
 def plot_fig2(t2, path):
-    fig, axes = plt.subplots(2, 4, figsize=(14, 6), sharey=True)
+    fig, axes = plt.subplots(2, 4, figsize=(14, 7), sharey=True)
     cols = {1: "#2a78d6", 5: "#eb6834"}
+    panels = {"fig2_left": ("Break date (β_post = 0.85)", "break date t*"),
+              "fig2_right": ("Break size (t* = 0)", "post-break β")}
+    meas_names = {"CoVaR": "CoVaR", "RevCoVaR": "Reverse CoVaR (K = 5 only)"}
     for i, lv in enumerate(LEVELS):
         for j, (figname, meas) in enumerate([(f, m) for f in ("fig2_left", "fig2_right")
                                              for m in ("CoVaR", "RevCoVaR")]):
@@ -142,15 +145,21 @@ def plot_fig2(t2, path):
                 s = t2[(t2.figure == figname) & (t2.Measure == meas) & (t2.alpha == lv) & (t2.K == K)]
                 if s.empty:
                     continue
-                ax.plot(s.x, s.theirs, "-", color=cols[K], label=f"theirs K={K}")
-                ax.errorbar(s.x, s.ours, yerr=2 * s.se_ours, fmt="o", color=cols[K], ms=4, label=f"ours K={K}")
-            ax.axhline(0.1, color="grey", ls="--", lw=0.8)
-            ax.set_title(f"{figname} {meas} α=β={lv}", fontsize=9)
-            ax.set_xlabel("break point t*" if figname == "fig2_left" else "post-break β")
-    axes[0, 0].set_ylabel("rejection rate")
-    axes[1, 0].set_ylabel("rejection rate")
-    axes[0, 0].legend(fontsize=7)
-    fig.tight_layout()
+                ax.plot(s.x, s.theirs, "-", color=cols[K], lw=1.5, label=f"theirs, K = {K}")
+                ax.errorbar(s.x, s.ours, yerr=2 * s.se_ours, fmt="o", mfc="white", mec=cols[K], ecolor=cols[K],
+                            ms=5, capsize=2, lw=1, label=f"ours ± 2 SE, K = {K}")
+            ax.axhline(0.1, color="grey", ls="--", lw=0.8, label="nominal size 10%")
+            title, xlabel = panels[figname]
+            ax.set_title(f"{title}\n{meas_names[meas]}, α = β = {lv}", fontsize=9)
+            ax.set_xlabel(xlabel)
+    axes[0, 0].set_ylabel("Joint rejection rate")
+    axes[1, 0].set_ylabel("Joint rejection rate")
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    order = [labels.index(l) for l in ("theirs, K = 1", "theirs, K = 5", "ours ± 2 SE, K = 1",
+                                       "ours ± 2 SE, K = 5", "nominal size 10%")]
+    fig.legend([handles[k] for k in order], [labels[k] for k in order], loc="lower center", ncol=5,
+               frameon=False, fontsize=9)
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
@@ -181,8 +190,14 @@ def main():
     ap.add_argument("--jobs", type=int, default=3)
     ap.add_argument("--only", type=str, default=None, help="one scenario 'T,BP' (smoke test)")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--plot-only", action="store_true", help="re-plot Fig 2 from the saved exp04_fig2 CSV")
     args = ap.parse_args()
     paths.ensure_dirs()
+    if args.plot_only:
+        t2 = pd.read_csv(paths.DERIVED / f"exp04_fig2_M{args.M}_s{args.seed}.csv")
+        plot_fig2(t2, paths.FIGURES / "fig2_ours_vs_theirs.png")
+        print("wrote figures/fig2_ours_vs_theirs.png")
+        return
     pd.set_option("display.width", 220, "display.max_rows", 400, "display.max_columns", 40)
     t0 = time.time()
 
