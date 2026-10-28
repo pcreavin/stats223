@@ -318,3 +318,46 @@ This agrees with exp 10 (above). In COVID, window indices 1–326 of 751 carry l
 ### Deviations and notes (milestone D)
 - Figures 5–6 are re-plots from our Python paths with `src/ggstyle`. They match their `Detectors_GARCH_CoVaR.pdf` / `..._RevCoVaR.pdf` visually, except that the COVID x-axis uses the correct dates.
 - Building the c(ρ, ν) table at ν = 10000 emits a harmless overflow warning in the Newton step. Those points fall back to bisection.
+
+## Milestone C: Figures 2–3 from our simulations (reduced scope), experiment 04
+
+Code: `src/power_sims.py`, `experiments/04_fig2_power.py`. Log: `data/derived/exp04_log.txt`. Tables: `data/derived/exp04_{fig2,fig3,delays}_M2000_s2026.csv`. Figures: `figures/fig2_ours_vs_theirs.png`, `fig3_ours_vs_theirs.png`.
+
+**Scope.** The run was cut to fit about one hour. Design:
+- break_in_X = TRUE, E = 5001 (true parameters), their stored thresholds (`df_CritVal_full`), M = 2000 per scenario;
+- K ∈ {1, 5}, α = β ∈ {0.9, 0.95}, CoVaR, plus reverse CoVaR for K = 5;
+- Fig 2 left: β_post = 0.85, t* ∈ {0, 400, 700, 800, 900, 1000};
+- Fig 2 right: t* = 0, β_post ∈ {0.70, 0.75, 0.80, 0.85};
+- 9 unique scenarios, because (t* = 0, β_post = 0.85) is shared by the two panels;
+- Fig 3: K = 5, α = 0.9;
+- delays: Joint only, t* ∈ {400, 700}, mean and median.
+
+Not replicated (scope): K = 2 and 10; t* ∈ {200, 600, 850, 950}; β_post ∈ {0.87, 0.89, 0.899}; Fig 3 at α = 0.95; own-detector delays; Figure 4.
+
+**Seeds / CRN.** Every scenario uses seed 2026 with Milestone B's chunked streams. K = 5 is simulated with 11 normal columns per day (`draw_dim`), so its 6 series coincide with Milestone B's K = 10 draws. K = 1 is the first bank. As a result:
+- t* = 1000 (no break) reproduces the first 2000 paths of Milestone B's null files **exactly**: 22/22 arrays (indicators and run lengths) are identical. This also confirms that break_in_X has no effect without a break.
+- Scenarios share random numbers, so cells are correlated across t* and β_post. The PASS counts are not independent trials.
+
+**Comparison.** PASS iff |ours − theirs| ≤ 3·√(SE_ours² + SE_theirs²), with binomial SEs for rates. For delays, the mean SE is sd/√n; for the median, SE_ours is their bootstrap SE rescaled by √(n_theirs/n_ours) (no bootstrap of ours). Cells where both SEs are 0 (rate 1.000 on both sides) pass only if the rates are equal. All 10 such cells are equal.
+
+| table | cells | PASS | max \|z\| |
+|---|---|---|---|
+| Fig 2 left (Joint rate) | 36 | 36 | 2.54 |
+| Fig 2 right (Joint rate) | 24 | 24 | 3.00 |
+| Fig 3 (first-detector shares, their tie rule) | 108 | 108 | 2.12 |
+| Joint delays (mean, median) | 24 | 24 | 2.16 |
+| **total** | **192** | **192** | |
+
+- Worst cell: Fig 2 right, CoVaR, α = 0.9, K = 5, β_post = 0.75. Ours 0.394, theirs 0.355, z = 3.00, right at the tolerance. The neighbouring K = 1 cell agrees (0.376 vs 0.377), and so do α = 0.95 (0.339 vs 0.330) and the reverse cell. We read it as noise, with the CRN caveat above.
+- Next: Fig 2 left, CoVaR, α = 0.95, K = 5, t* = 400: 0.989 vs 0.995 (z = −2.5).
+- Null corner (t* = 1000): Joint rates 0.081–0.104 vs theirs 0.068–0.103. All PASS.
+- Fig 3: VaR (X) is the most frequent first detector for CoVaR (0.48 at t* = 0, theirs 0.50). In reverse mode the bank VaR detectors beat the reverse CoVaR detectors (0.37 vs 0.24 at t* = 0), as in theirs.
+- Delays: means and medians agree within 3 days at t* = 400 and within 6 days at t* = 700. At t* = 700 ours are shorter in 4 of 6 cells (mean −1.8 to −3.1, median −3 to −6 days; CoVaR K = 1 both levels, CoVaR K = 5 α = 0.9, reverse α = 0.9) and equal or longer in the other 2. The largest gap has |z| = 2.2. This is not significant per cell, and the cells share paths.
+
+**Persisted simulations.** 36 configs (9 scenarios × K ∈ {1, 5} × 2 levels) are in `data/derived/sims/`, named `K{K}_a{lv}_b{lv}_t{t*}_bp{β_post}_bx1_M2000_n1000_m250_E5001_s2026`. They use Milestone B's format and add a `draw_dim` meta key; K = 1 has `derived_from` = the K = 5 file. Runtime: 105 s with 3 jobs (about 15–20 s to simulate and about 15 s to monitor and save per scenario). The full sims directory is now 61 MB.
+
+### Deviations (milestone C)
+- M = 2000, not their 5000. The tolerance accounts for this through SE_ours.
+- CRN across scenarios, while their scenarios are separate runs.
+- The K = 1 and K = 5 cells share paths (K-subset, as in Milestone B).
+

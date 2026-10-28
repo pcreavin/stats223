@@ -22,9 +22,11 @@ Dimitriadis & Hoga (2026), VaR / CoVaR / reverse CoVaR monitoring. Branch `paul`
 | T5 | Figure 4 targets (estimation effect, E=1000) | done | exp 08 | same CSV, `figures/targets_fig4.png`. Uses all 6 EstWindow files (4849 reps). Null size 0.19–0.29 vs ι=0.1 |
 | T6 | Detection delays (not in the paper) | done | exp 08 | `data/targets/targets_delays.csv` (bootstrap SEs, B=500) |
 | **Milestone C: our simulations vs the Figure 2–4 targets** |||||
-| C1 | Figure 2 from our simulations (break point t* ∈ {0, 700, 800, 1000}; misspecification β_post grid) | pending | exp 04 | — |
-| C2 | Figure 3 from our simulations: same break simulations as Figure 2, recording which detector fires first | pending | exp 04 | — |
-| C3 | Figure 4 from our simulations (estimation effect, E=1000) | optional | needs GARCH re-estimation in every replication | — |
+| C1 | Figure 2 from our simulations, reduced scope: K ∈ {1, 5}, α=β ∈ {0.9, 0.95}, t* ∈ {0, 400, 700, 800, 900, 1000}, β_post ∈ {0.70, 0.75, 0.80, 0.85}, M = 2000 | done | exp 04 | left 36/36, right 24/24 PASS (3σ combined SE), max \|z\| 3.00; t* = 1000 identical to Milestone B null paths (22/22 arrays); Joint delays t* ∈ {400, 700} 24/24 PASS |
+| C1' | Figure 2: K = 2, 10; t* ∈ {200, 600, 850, 950}; β_post ∈ {0.87, 0.89, 0.899} | not replicated (scope) | — | — |
+| C2 | Figure 3 from our simulations (K = 5, α=β = 0.9, their tie rule) | done | exp 04 | 108/108 PASS, max \|z\| 2.12 |
+| C2' | Figure 3 at α=β = 0.95; own-detector delays | not replicated (scope) | — | — |
+| C3 | Figure 4 from our simulations (estimation effect, E=1000) | not replicated (scope) | needs GARCH re-estimation in every replication | — |
 | **Application (Figures 5–6)** |||||
 | D1 | Application targets from `appl_res` (first alarms, event offsets, claims) | done | exp 09 | claims a–d 6/6 PASS at α=β=0.95 (WFC first only as a tie with BAC); `data/targets/targets_application_alarms.csv`, `figures/targets_fig{5,6}.png` |
 | D2 | Date check: are `appl_res` date labels shifted by NA rows? | done | exp 10 | E = 1500 in all windows. COVID labels 1–326 (to 2019-07-05) are 4 trading days late (SPF NA 2019-07-01..05); the other windows are correct. No crash-period alarm affected |
@@ -47,7 +49,7 @@ Milestone B's null simulations are saved, and the e-detectors will run on exactl
 | `rl_covar` | [M, K+2] | float64 | run lengths of VaR, CoVaR_1..K and Joint (inf = no alarm) |
 | `rl_rev` | [M, 2K+1] | float64 | run lengths of VaR_1..K, CoVaR_1..K and Joint (K > 1 only) |
 
-The break and misspecification simulations for Figures 2–3 don't exist yet. Milestone C (exp 04) will save them in the same format via `sims_io.save_sim`.
+**Milestone C (exp 04), break and misspecification paths:** 36 more configurations in the same format, with break_in_X = TRUE, M = 2000 and seed 2026. They cover 9 scenarios (t* ∈ {0, 400, 700, 800, 900, 1000} at β_post = 0.85, and t* = 0 at β_post ∈ {0.70, 0.75, 0.80}) × K ∈ {1, 5} × α=β ∈ {0.9, 0.95}. Name pattern: `K{K}_a{lv}_b{lv}_t{t*}_bp{β_post}_bx1_M2000_n1000_m250_E5001_s2026`. You can regenerate them with `python experiments/04_fig2_power.py --M 2000 --jobs 3` (about 2 min). The t* = 1000 files equal the first 2000 null paths. The directory is now 61 MB.
 
 ## Merge verification (2026-10-27)
 | check | result |
