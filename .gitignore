@@ -16,3 +16,4 @@ r/.Rproj.user/
 r/renv/library/
 .RData
 *.RData
+r/renv/library
