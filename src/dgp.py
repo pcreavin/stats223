@@ -219,9 +219,11 @@ def violation_sequences(Y, sig, rho, nu, alpha: float, beta: float) -> dict:
 
 
 # --------------------------------------------------------------------------- full simulation pipeline
-def simulate_indicators(M: int, p: DGPParams, levels, seed: int, chunk: int = 500, verbose: bool = False):
+def simulate_indicators(M: int, p: DGPParams, levels, seed: int, chunk: int = 500, verbose: bool = False,
+                        draw_dim: int | None = None):
     """Simulate M paths in fixed chunks (child seeds from SeedSequence(seed), so results do not depend on
-    anything but (M, p, seed, chunk)) and return {level: violation_sequences(...)} with alpha = beta = level."""
+    anything but (M, p, seed, chunk, draw_dim)) and return {level: violation_sequences(...)} with
+    alpha = beta = level. draw_dim: see simulate_and_filter."""
     import time
     n_chunks = -(-M // chunk)
     children = np.random.SeedSequence(seed).spawn(n_chunks)
@@ -229,7 +231,7 @@ def simulate_indicators(M: int, p: DGPParams, levels, seed: int, chunk: int = 50
     for c, ss in enumerate(children):
         t0 = time.time()
         m = min(chunk, M - c * chunk)
-        Y, S, R = simulate_and_filter(m, p, np.random.default_rng(ss))
+        Y, S, R = simulate_and_filter(m, p, np.random.default_rng(ss), draw_dim=draw_dim)
         for lv in levels:
             res[lv].append(violation_sequences(Y, S, R, p.nu, lv, lv))
         if verbose:
