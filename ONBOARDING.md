@@ -5,16 +5,15 @@ STATS 223 project: a Python replication of Dimitriadis & Hoga (2026), *Systemic 
 ## Status
 | part | state | where |
 |---|---|---|
-| Replication (critical values, Tables 1–2, Figures 2–3, 5–6) | done, all checks PASS | `paul` = `origin/main` + Figure 2 polish; `REPLICATION.md` |
-| Extension 1: time-varying oracle e-SR detector (K = 1) | done, written up | branch `edet-oracle`; `EXTENSION.md` |
+| Replication (critical values, Tables 1–2, Figures 2–3, 5–6) | done, all checks PASS | `REPLICATION.md` |
+| Extension 1: time-varying oracle e-SR detector (K = 1) | done, written up | `EXTENSION.md` |
 | Extension 2+: realistic (non-oracle) e-detectors | next | not started |
 
-New extension work should branch from `edet-oracle`, which contains everything in `paul` plus `src/oracle.py`, `src/edetectors.py`, `experiments/11_oracle_k1.py` and their tests.
+Everything is merged into `main` (and `paul`). Branch new work from `main`. The extension code is `src/oracle.py`, `src/edetectors.py`, `experiments/11_oracle_k1.py` and their tests.
 
 ## Setup
 ```bash
 git clone --recurse-submodules https://github.com/pcreavin/stats223.git && cd stats223
-git checkout edet-oracle
 python3.13 -m venv .venv          # 3.14 not supported by numba/arch wheels
 .venv/bin/pip install -r requirements.txt && .venv/bin/pip install -e .
 .venv/bin/pytest -q               # R cross-checks skip if Rscript is missing
